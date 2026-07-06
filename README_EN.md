@@ -71,17 +71,34 @@ This project finds new papers (arXiv / bioRxiv / medRxiv / PubMed) that may attr
 | OPENAI_API_BASE | API URL when using the API to access LLMs. | https://api.siliconflow.cn/v1 |
 
 Then go to **Settings → Secrets and variables → Actions → Variables** and add a repository variable named `CUSTOM_CONFIG` for your custom configuration.
-Paste the following content into the value of `CUSTOM_CONFIG` variable:
+Paste the following content into the value of `CUSTOM_CONFIG` variable — this already covers every configurable field, edit it as needed. Fields with `${oc.env:XXX}` are resolved at runtime from the Secrets you set above; **do not** paste real keys/passwords here in plain text:
 ```yaml
 zotero:
   user_id: ${oc.env:ZOTERO_ID}
   api_key: ${oc.env:ZOTERO_KEY}
-  include_path: null # Or e.g. ["2026/survey/**", "2026/reading-group/**"]
+  include_path: null # Use this to only push papers from specific Zotero collections. Example: ["2026/survey/**", "2026/reading-group/**"]
+  ignore_path: null # Use this to exclude specific Zotero collections. Example: ["archive/**"]
+
+search:
+  mode: 5 # Scoring weight dial. 1=keyword only, 2=more keyword/less Zotero, 3=equal, 4=less keyword/more Zotero, 5=Zotero only
+  keywords: null # Required when mode < 5. Natural language description of your research interests. Example: "hydrogel materials in ophthalmology combined with traditional Chinese medicine"
+
+source:
+  mix_mode: 5 # Source mix dial. 1=PubMed only, 2=more PubMed/less arXiv, 3=equal, 4=less PubMed/more arXiv, 5=arXiv only
+  arxiv:
+    category: ["cs.AI","cs.CV","cs.LG","cs.CL"] # Replace with the arXiv categories you're interested in, see https://arxiv.org/category_taxonomy
+    include_cross_list: false # Set to true to include arXiv cross-list papers in these categories
+  biorxiv:
+    category: null # Example: ["biochemistry","animal behavior and cognition"]
+  medrxiv:
+    category: null # Example: ["psychiatry and clinical psychology", "neurology"]
+  pubmed:
+    max_results: 200 # Max papers to fetch from PubMed
 
 email:
   sender: ${oc.env:SENDER}
   receiver: ${oc.env:RECEIVER}
-  smtp_server: smtp.qq.com
+  smtp_server: smtp.qq.com # Replace with your own email provider's SMTP server
   smtp_port: 465
   sender_password: ${oc.env:SENDER_PASSWORD}
 
@@ -90,62 +107,8 @@ llm:
     key: ${oc.env:OPENAI_API_KEY}
     base_url: ${oc.env:OPENAI_API_BASE}
   generation_kwargs:
-    model: gpt-4o-mini
-
-source:
-  arxiv:
-    category: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false # Set to true to include arXiv cross-list papers in these categories.
-
-executor:
-  debug: ${oc.env:DEBUG,null}
-  source: ['arxiv']
-```
-Set `source.arxiv.include_cross_list: true` if you want cross-listed papers included.
->[!NOTE]
-> `${oc.env:XXX,yyy}` means the value of the environment variable `XXX`. If the variable is not set, the default value `yyy` will be used.
-
-Here is the full configuration reference (mirroring the defaults in `config/base.yaml`); `???` marks fields with no default that must ultimately have a value. This is provided purely so you know what's configurable.
-> [!IMPORTANT]
-> This is NOT a second template to fill in! Sensitive fields (`zotero.api_key`, `email.sender_password`, `llm.api.key`, etc.) are already resolved via `${oc.env:...}` from Secrets in the `CUSTOM_CONFIG` template pasted above. Do not paste real keys/passwords into `CUSTOM_CONFIG` again here in plain text. This block only shows which non-sensitive fields (e.g. `source.mix_mode`, `executor.retrieval_days`, `executor.favorite_journals`) you may optionally add to `CUSTOM_CONFIG`.
-```yaml
-zotero:
-  user_id: null # Required when search.mode > 1. Example: 12345678
-  api_key: null # Required when search.mode > 1. Example: AB5tZ877P2j7Sm2Mragq041H
-  include_path: null # Example: ["2026/survey/**", "2026/reading-group/**"]
-  ignore_path: null # Example: ["archive/**"]
-
-search:
-  mode: 5 # 1=keyword only, 2=more keyword/less Zotero, 3=equal, 4=less keyword/more Zotero, 5=Zotero only
-  keywords: null # Required when mode < 5. Natural language description of your interests.
-                 # Example: "hydrogel materials in ophthalmology combined with traditional Chinese medicine"
-
-source:
-  mix_mode: 5 # 1=PubMed only, 2=more PubMed/less arXiv, 3=equal, 4=less PubMed/more arXiv, 5=arXiv only
-  arxiv:
-    category: null # Example: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false
-  biorxiv:
-    category: null # Example: ["biochemistry","animal behavior and cognition"]
-  medrxiv:
-    category: null # Example: ["psychiatry and clinical psychology", "neurology"]
-  pubmed:
-    max_results: 200 # Max papers to fetch from PubMed. Example: 200
-
-email:
-  sender: ??? # Example: abc@qq.com
-  receiver: ??? # Example: abc@outlook.com
-  smtp_server: ??? # Example: smtp.qq.com
-  smtp_port: ??? # Example: 465
-  sender_password: ??? # SMTP authentication code (not your login password)
-
-llm:
-  api:
-    key: ??? # Example: sk-xxx
-    base_url: ??? # Example: https://api.openai.com/v1
-  generation_kwargs:
     max_tokens: 16384
-    model: ???
+    model: gpt-4o-mini # Replace with a model supported by your LLM provider
   language: English # Preferred language for TL;DR summaries. Example: Chinese
 
 reranker:
@@ -155,22 +118,24 @@ reranker:
       task: retrieval
       prompt_name: document
   api:
-    key: null
+    key: null # Required when executor.reranker=api
     base_url: null
     model: null
     batch_size: null
 
 executor:
-  debug: false
-  send_empty: false
-  skip_full_text: false # Skip downloading full text PDFs/HTML for papers. Saves memory and time. Example: true
-  max_paper_num: 100
-  source: ??? # Preprint sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
+  debug: ${oc.env:DEBUG,null}
+  send_empty: false # Whether to still send an empty email when no new papers are found
+  skip_full_text: false # Skip downloading full text PDFs/HTML for papers. Saves memory and time
+  max_paper_num: 100 # Maximum number of papers shown in the email
+  source: ['arxiv'] # Paper sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
   reranker: local # 'local' or 'api'
   retrieval_days: 1 # Days back to retrieve papers. Example: 7 for last week
-  send_interval_days: 1 # For cron reference only. See docs/cron-guide.md. Example: 7
+  send_interval_days: 1 # For cron reference only. See docs/cron-guide.md
   favorite_journals: null # A list of journal names to boost in ranking. Papers from these journals get 1.5x score. Example: ["Nature Medicine", "The Lancet", "JAMA"]
 ```
+> [!NOTE]
+> `${oc.env:XXX,yyy}` means the value of the environment variable `XXX`. If the variable is not set, the default value `yyy` will be used.
 
 That's all! Now you can test the workflow by manually triggering it from the **Actions** tab of your fork (select the "Test" workflow → "Run workflow").
 

@@ -71,17 +71,34 @@
 | OPENAI_API_BASE | 调用 LLM API 的地址。 | https://api.siliconflow.cn/v1 |
 
 然后进入 **Settings → Secrets and variables → Actions → Variables**，新增一个名为 `CUSTOM_CONFIG` 的仓库变量，用于个性化配置。
-将以下内容粘贴到 `CUSTOM_CONFIG` 变量的值中：
+将以下内容粘贴到 `CUSTOM_CONFIG` 变量的值中——这里已经包含了全部可配置项，按需修改即可；带 `${oc.env:XXX}` 的字段会在运行时从你上面设置的 Secrets 中读取，**不要**把真实的 key、密码等敏感信息以明文形式填在这里：
 ```yaml
 zotero:
   user_id: ${oc.env:ZOTERO_ID}
   api_key: ${oc.env:ZOTERO_KEY}
-  include_path: null # 或例如 ["2026/survey/**", "2026/reading-group/**"]
+  include_path: null # 只想推送特定 Zotero 分类下的论文时使用。示例: ["2026/survey/**", "2026/reading-group/**"]
+  ignore_path: null # 想排除特定 Zotero 分类时使用。示例: ["archive/**"]
+
+search:
+  mode: 5 # 评分模式旋钮。1=纯关键词, 2=偏关键词/少Zotero, 3=各占一半, 4=少关键词/偏Zotero, 5=纯Zotero
+  keywords: null # 当 mode < 5 时必填，用自然语言描述你的研究兴趣。示例: "眼科水凝胶材料结合中医药"
+
+source:
+  mix_mode: 5 # 来源比例旋钮。1=纯PubMed, 2=偏PubMed/少arXiv, 3=各占一半, 4=少PubMed/偏arXiv, 5=纯arXiv
+  arxiv:
+    category: ["cs.AI","cs.CV","cs.LG","cs.CL"] # 换成你感兴趣的 arXiv 分类，参考 https://arxiv.org/category_taxonomy
+    include_cross_list: false # 设为 true 可包含这些分类下的 arXiv 交叉列表论文
+  biorxiv:
+    category: null # 示例: ["biochemistry","animal behavior and cognition"]
+  medrxiv:
+    category: null # 示例: ["psychiatry and clinical psychology", "neurology"]
+  pubmed:
+    max_results: 200 # 从 PubMed 抓取的最大论文数
 
 email:
   sender: ${oc.env:SENDER}
   receiver: ${oc.env:RECEIVER}
-  smtp_server: smtp.qq.com
+  smtp_server: smtp.qq.com # 换成你自己邮箱服务商的 SMTP 服务器
   smtp_port: 465
   sender_password: ${oc.env:SENDER_PASSWORD}
 
@@ -90,62 +107,8 @@ llm:
     key: ${oc.env:OPENAI_API_KEY}
     base_url: ${oc.env:OPENAI_API_BASE}
   generation_kwargs:
-    model: gpt-4o-mini
-
-source:
-  arxiv:
-    category: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false # 设为 true 可包含这些分类下的 arXiv 交叉列表论文。
-
-executor:
-  debug: ${oc.env:DEBUG,null}
-  source: ['arxiv']
-```
-如果想包含交叉列表论文，将 `source.arxiv.include_cross_list` 设为 `true`。
->[!NOTE]
-> `${oc.env:XXX,yyy}` 表示读取环境变量 `XXX` 的值；如果该环境变量未设置，则使用默认值 `yyy`。
-
-以下是完整配置参考（对应 `config/base.yaml` 的默认值），`???` 表示该字段没有默认值、最终必须有值，仅供你了解全部可配置项。
-> [!IMPORTANT]
-> 这不是第二份要填写的模板！敏感字段（`zotero.api_key`、`email.sender_password`、`llm.api.key` 等）已经在上面粘贴到 `CUSTOM_CONFIG` 的模板中通过 `${oc.env:...}` 从 Secrets 读取。请不要在这里把真实的 key、密码等敏感信息以明文形式再次填入 `CUSTOM_CONFIG`。这里的代码块只是用来告诉你还有哪些非敏感项（如 `source.mix_mode`、`executor.retrieval_days`、`executor.favorite_journals` 等）可以按需添加到 `CUSTOM_CONFIG` 中。
-```yaml
-zotero:
-  user_id: null # 当 search.mode > 1 时必填。示例: 12345678
-  api_key: null # 当 search.mode > 1 时必填。示例: AB5tZ877P2j7Sm2Mragq041H
-  include_path: null # 示例: ["2026/survey/**", "2026/reading-group/**"]
-  ignore_path: null # 示例: ["archive/**"]
-
-search:
-  mode: 5 # 1=纯关键词, 2=偏关键词/少Zotero, 3=各占一半, 4=少关键词/偏Zotero, 5=纯Zotero
-  keywords: null # 当 mode < 5 时必填，用自然语言描述你的研究兴趣。
-                 # 示例: "眼科水凝胶材料结合中医药"
-
-source:
-  mix_mode: 5 # 1=纯PubMed, 2=偏PubMed/少arXiv, 3=各占一半, 4=少PubMed/偏arXiv, 5=纯arXiv
-  arxiv:
-    category: null # 示例: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false
-  biorxiv:
-    category: null # 示例: ["biochemistry","animal behavior and cognition"]
-  medrxiv:
-    category: null # 示例: ["psychiatry and clinical psychology", "neurology"]
-  pubmed:
-    max_results: 200 # 从 PubMed 抓取的最大论文数。示例: 200
-
-email:
-  sender: ??? # 示例: abc@qq.com
-  receiver: ??? # 示例: abc@outlook.com
-  smtp_server: ??? # 示例: smtp.qq.com
-  smtp_port: ??? # 示例: 465
-  sender_password: ??? # SMTP 授权码（不是登录密码）
-
-llm:
-  api:
-    key: ??? # 示例: sk-xxx
-    base_url: ??? # 示例: https://api.openai.com/v1
-  generation_kwargs:
     max_tokens: 16384
-    model: ???
+    model: gpt-4o-mini # 换成你所用 LLM 服务支持的模型名
   language: English # TL;DR 摘要使用的语言。示例: Chinese
 
 reranker:
@@ -155,22 +118,24 @@ reranker:
       task: retrieval
       prompt_name: document
   api:
-    key: null
+    key: null # 当 executor.reranker=api 时必填
     base_url: null
     model: null
     batch_size: null
 
 executor:
-  debug: false
-  send_empty: false
-  skip_full_text: false # 跳过下载论文全文 PDF/HTML，节省内存和时间。示例: true
-  max_paper_num: 100
-  source: ??? # 预印本来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']
+  debug: ${oc.env:DEBUG,null}
+  send_empty: false # 没有新论文时是否仍发送一封空邮件
+  skip_full_text: false # 跳过下载论文全文 PDF/HTML，节省内存和时间
+  max_paper_num: 100 # 邮件中展示的论文数量上限
+  source: ['arxiv'] # 论文来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']
   reranker: local # 'local' 或 'api'
   retrieval_days: 1 # 回溯检索的天数。示例: 7 表示检索最近一周
-  send_interval_days: 1 # 仅供 cron 配置参考，详见 docs/cron-guide.md。示例: 7
+  send_interval_days: 1 # 仅供 cron 配置参考，详见 docs/cron-guide.md
   favorite_journals: null # 需要加权的收藏期刊列表，命中的论文得分 ×1.5。示例: ["Nature Medicine", "The Lancet", "JAMA"]
 ```
+> [!NOTE]
+> `${oc.env:XXX,yyy}` 表示读取环境变量 `XXX` 的值；如果该环境变量未设置，则使用默认值 `yyy`。
 
 配置完成！现在你可以在 Fork 仓库的 **Actions** 标签页手动触发工作流进行测试（选择 "Test" 工作流 → "Run workflow"）。
 
