@@ -114,3 +114,24 @@ def test_pubmed_max_results_override(config):
     assert retriever._max_results == config.source.pubmed.max_results
     retriever.set_max_results(10)
     assert retriever._max_results == 10
+
+
+def test_pubmed_esearch_uses_valid_sort_value(config, monkeypatch):
+    """'pub+date' is not a recognized NCBI sort schema (silently ignored by the
+    API, falling back to relevance ranking). The correct value is 'pub_date'.
+    """
+    captured_params = {}
+
+    def _fake_ncbi_get(url, params):
+        captured_params.update(params)
+        return SimpleNamespace(json=lambda: {"esearchresult": {"idlist": []}})
+
+    import zotero_arxiv_daily.retriever.pubmed_retriever as pubmed_retriever
+
+    monkeypatch.setattr(pubmed_retriever, "_ncbi_get", _fake_ncbi_get)
+    monkeypatch.setattr(pubmed_retriever, "sleep", lambda _: None)
+
+    retriever = PubMedRetriever(config)
+    retriever._fetch_pmids("some query")
+
+    assert captured_params["sort"] == "pub_date"

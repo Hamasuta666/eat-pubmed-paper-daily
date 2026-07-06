@@ -4,7 +4,7 @@ from ..protocol import Paper
 from loguru import logger
 from typing import Any
 from time import sleep
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 @register_retriever("biorxiv")
 class BiorxivRetriever(BaseRetriever):
@@ -15,30 +15,50 @@ class BiorxivRetriever(BaseRetriever):
         if self.retriever_config.category is None:
             raise ValueError(f"category must be specified for {self.name}")
 
-    def _retrieve_raw_papers(self) -> list[dict[str, Any]]:
-        retrieval_days = int(self.config.executor.get("retrieval_days", 1))
-        end_date = datetime.utcnow().strftime("%Y-%m-%d")
-        start_date = (datetime.utcnow() - timedelta(days=retrieval_days)).strftime("%Y-%m-%d")
-        date_range = f"{start_date}/{end_date}"
-        api_url = f"https://api.biorxiv.org/details/{self.server}/{date_range}"
-
+    def _fetch_page(self, date_range: str, cursor: int) -> dict[str, Any]:
+        api_url = f"https://api.biorxiv.org/details/{self.server}/{date_range}/{cursor}"
         retry_num = 10
         delay_time = 10
         for i in range(retry_num):
             try:
-                response = requests.get(api_url)
+                response = requests.get(api_url, timeout=30)
                 response.raise_for_status()
-                break
+                return response.json()
             except Exception as e:
                 if i == retry_num - 1:
                     raise e
                 else:
                     logger.warning(f"Failed to retrieve papers: {str(e)}. Retry in {delay_time} seconds.")
                     sleep(delay_time)
-        result = response.json()
-        collection = result.get('collection', [])
+
+    def _retrieve_raw_papers(self) -> list[dict[str, Any]]:
+        """Fetch every page for the date range.
+
+        The biorxiv/medrxiv API paginates results (tens of records per call)
+        and reports the true total in `messages[0].total`; a single
+        unpaginated request would silently drop most of a day's papers.
+        """
+        retrieval_days = int(self.config.executor.get("retrieval_days", 1))
+        end_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        start_date = (datetime.now(timezone.utc) - timedelta(days=retrieval_days)).strftime("%Y-%m-%d")
+        date_range = f"{start_date}/{end_date}"
+
+        collection: list[dict[str, Any]] = []
+        messages: list[dict[str, Any]] = []
+        cursor = 0
+        while True:
+            result = self._fetch_page(date_range, cursor)
+            page = result.get('collection', [])
+            messages = result.get('messages', [])
+            collection.extend(page)
+            total = int(messages[0].get('total', len(collection))) if messages else len(collection)
+            if not page or len(collection) >= total:
+                break
+            cursor = len(collection)
+            sleep(0.5)  # be a good API citizen between pages
+
         if len(collection) == 0:
-            logger.warning(f"No paper found. API Message: {result.get('messages', '')}")
+            logger.warning(f"No paper found. API Message: {messages}")
             return []
         categories = [c.lower() for c in self.retriever_config.category]
         collection = [c for c in collection if c['category'] in categories]

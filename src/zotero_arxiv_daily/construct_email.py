@@ -185,7 +185,7 @@ def render_email(papers: list[Paper], summary: str | None = None) -> str:
         else:
             affiliations = 'Unknown Affiliation'
         parts.append(get_block_html(
-            p.title, authors, rate, p.tldr, p.pdf_url,
+            p.title, authors, rate, p.tldr, p.pdf_url or p.url,
             affiliations=affiliations,
             source=p.source,
             journal=p.journal,

@@ -257,8 +257,9 @@ class Executor:
         pubmed_ratio, arxiv_ratio = _MIX_MODE_RATIOS.get(mix_mode, (0.0, 1.0))
         max_total = int(config.executor.max_paper_num)
 
-        self._pubmed_quota = int(max_total * pubmed_ratio * 2)   # fetch 2× to allow filtering
-        self._arxiv_quota = int(max_total * arxiv_ratio * 2)
+        # fetch 2x the target ratio to allow room for relevance filtering,
+        # with a floor of 1 so a small max_paper_num doesn't round the quota to 0.
+        self._pubmed_quota = max(1, int(max_total * pubmed_ratio * 2)) if pubmed_ratio > 0 else 0
 
         # Build retrievers based on source config and mix_mode
         self.retrievers: dict = {}
@@ -275,6 +276,13 @@ class Executor:
                     continue  # pubmed handled separately above
                 retriever_cls = get_retriever_cls(source)
                 self.retrievers[source] = retriever_cls(config)
+
+        if not self.retrievers:
+            raise ValueError(
+                "No paper retriever was configured. Check config.source.mix_mode "
+                f"(current={mix_mode}) and config.executor.source "
+                f"(current={list(config.executor.source)}): at least one source must be active."
+            )
 
     # ------------------------------------------------------------------
     # Keyword extraction

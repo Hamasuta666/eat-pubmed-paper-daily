@@ -161,11 +161,13 @@ reranker:
 executor:
   debug: false
   send_empty: false
+  skip_full_text: false # Skip downloading full text PDFs/HTML for papers. Saves memory and time. Example: true
   max_paper_num: 100
   source: ??? # Preprint sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
   reranker: local # 'local' or 'api'
   retrieval_days: 1 # Days back to retrieve papers. Example: 7 for last week
   send_interval_days: 1 # For cron reference only. See docs/cron-guide.md. Example: 7
+  favorite_journals: null # A list of journal names to boost in ranking. Papers from these journals get 1.5x score. Example: ["Nature Medicine", "The Lancet", "JAMA"]
 ```
 
 That's all! Now you can test the workflow by manually triggering it from the **Actions** tab of your fork (select the "Test" workflow → "Run workflow").

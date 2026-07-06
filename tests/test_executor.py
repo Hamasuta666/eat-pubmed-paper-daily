@@ -241,6 +241,20 @@ def test_run_no_papers_send_empty_false(config, monkeypatch):
     assert len(sent) == 0, "No email should be sent when no papers and send_empty=false"
 
 
+def test_executor_rejects_empty_source_list(config):
+    """mix_mode=5 (arxiv-family only) with an empty executor.source list leaves
+    no retriever configured; this must fail fast with a clear error instead of
+    crashing later inside ThreadPoolExecutor(max_workers=0)."""
+    from omegaconf import open_dict
+
+    with open_dict(config):
+        config.executor.source = []
+        config.source.mix_mode = 5
+
+    with pytest.raises(ValueError, match="No paper retriever was configured"):
+        Executor(config)
+
+
 def test_run_no_papers_send_empty_true(config, monkeypatch):
     """When no papers are found and send_empty=true, empty email is sent."""
     import smtplib

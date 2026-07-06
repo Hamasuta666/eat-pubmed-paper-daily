@@ -1,7 +1,7 @@
 import re
 import requests
 from time import sleep
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from loguru import logger
 from .base import BaseRetriever, register_retriever
@@ -98,14 +98,9 @@ class PubMedRetriever(BaseRetriever):
         # BaseRetriever.__init__ calls getattr(config.source, self.name)
         # so config.source.pubmed must exist
         super().__init__(config)
-        self._keywords: str | None = None           # legacy plain-text keywords
         self._pubmed_query: str | None = None        # strict query (1-2 AND groups)
         self._pubmed_broad_query: str | None = None  # broad query (single OR group)
         self._max_results: int = int(self.retriever_config.get("max_results", 200))
-
-    def set_keywords(self, keywords: str) -> None:
-        """Legacy: inject plain-text keyword string (used as final fallback)."""
-        self._keywords = keywords
 
     def set_pubmed_query(self, pubmed_query: str) -> None:
         """Inject a structured PubMed strict query (1-2 AND concept groups)."""
@@ -125,15 +120,8 @@ class PubMedRetriever(BaseRetriever):
 
     def _date_filter(self) -> str:
         retrieval_days = int(self.config.executor.get("retrieval_days", 1))
-        start = (datetime.utcnow() - timedelta(days=retrieval_days)).strftime("%Y/%m/%d")
+        start = (datetime.now(timezone.utc) - timedelta(days=retrieval_days)).strftime("%Y/%m/%d")
         return f'("{start}"[PDAT] : "3000"[PDAT])'
-
-    def _build_query(self) -> str:
-        date_filter = self._date_filter()
-        kw = self._pubmed_query or self._keywords
-        if kw:
-            return f"({kw}) AND {date_filter}"
-        return date_filter
 
     def _fetch_pmids(self, query: str) -> list[str]:
         params = {
@@ -141,7 +129,7 @@ class PubMedRetriever(BaseRetriever):
             "term": query,
             "retmax": self._max_results,
             "retmode": "json",
-            "sort": "pub+date",
+            "sort": "pub_date",
         }
         sleep(_RATE_SLEEP)
         resp = _ncbi_get(_ESEARCH_URL, params)
@@ -173,7 +161,7 @@ class PubMedRetriever(BaseRetriever):
     # ------------------------------------------------------------------
 
     def _retrieve_raw_papers(self) -> list[dict[str, Any]]:
-        """Four-level progressive fallback, escalating only when results < _MIN_RESULTS."""
+        """Progressive fallback across query levels, escalating only when results < _MIN_RESULTS."""
         date_filter = self._date_filter()
         min_n = self._MIN_RESULTS
         seen_queries: set[str] = set()
@@ -220,10 +208,6 @@ class PubMedRetriever(BaseRetriever):
             pmids_fb = _try("broad|no-tiab", _strip_tiab(self._pubmed_broad_query))
             if len(pmids_fb) > len(pmids):
                 pmids = pmids_fb
-
-        # ── Level 5: legacy plain-text keywords (last resort) ───────────────
-        if not pmids and self._keywords:
-            pmids = _try("legacy-keywords", self._keywords)
 
         if not pmids:
             logger.warning("PubMed: no results found after all fallback levels")

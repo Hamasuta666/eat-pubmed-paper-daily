@@ -47,6 +47,17 @@ def test_render_email_no_affiliations():
     assert "Unknown Affiliation" in html
 
 
+def test_render_email_falls_back_to_url_when_pdf_url_missing():
+    """Papers without a resolvable PDF (e.g. PubMed entries lacking a DOI) must
+    still link somewhere useful, not render a literal 'None' href."""
+    paper = make_sample_paper(
+        url="https://pubmed.ncbi.nlm.nih.gov/12345/", pdf_url=None, score=7.0, tldr="ok"
+    )
+    html = render_email([paper])
+    assert 'href="https://pubmed.ncbi.nlm.nih.gov/12345/"' in html
+    assert 'href="None"' not in html
+
+
 def test_render_email_shows_stars_for_high_score():
     paper = make_sample_paper(score=8.5, tldr="ok")
     html = render_email([paper])

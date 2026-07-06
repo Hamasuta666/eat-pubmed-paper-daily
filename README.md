@@ -161,11 +161,13 @@ reranker:
 executor:
   debug: false
   send_empty: false
+  skip_full_text: false # 跳过下载论文全文 PDF/HTML，节省内存和时间。示例: true
   max_paper_num: 100
   source: ??? # 预印本来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']
   reranker: local # 'local' 或 'api'
   retrieval_days: 1 # 回溯检索的天数。示例: 7 表示检索最近一周
   send_interval_days: 1 # 仅供 cron 配置参考，详见 docs/cron-guide.md。示例: 7
+  favorite_journals: null # 需要加权的收藏期刊列表，命中的论文得分 ×1.5。示例: ["Nature Medicine", "The Lancet", "JAMA"]
 ```
 
 配置完成！现在你可以在 Fork 仓库的 **Actions** 标签页手动触发工作流进行测试（选择 "Test" 工作流 → "Run workflow"）。

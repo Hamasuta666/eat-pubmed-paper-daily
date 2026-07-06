@@ -106,7 +106,7 @@ def send_email(config:DictConfig, html:str):
     msg['From'] = _format_addr('Github Action <%s>' % sender)
     msg['To'] = _format_addr('You <%s>' % receiver)
     today = datetime.datetime.now().strftime('%Y/%m/%d')
-    msg['Subject'] = Header(f'Daily arXiv {today}', 'utf-8').encode()
+    msg['Subject'] = Header(f'Eat Paper Daily {today}', 'utf-8').encode()
 
     try:
         server = smtplib.SMTP(smtp_server, smtp_port)
