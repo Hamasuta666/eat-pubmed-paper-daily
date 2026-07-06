@@ -122,3 +122,30 @@ def test_affiliations_error_returns_none(llm_params):
     result = paper.generate_affiliations(broken_client, llm_params)
     assert result is None
     assert paper.affiliations is None
+
+
+# ---------------------------------------------------------------------------
+# generate_title_translation
+# ---------------------------------------------------------------------------
+
+
+def test_title_translation_returns_and_stores_result(llm_params):
+    client = make_stub_openai_client()
+    paper = make_sample_paper()
+    result = paper.generate_title_translation(client, llm_params)
+    assert result == "示例论文标题"
+    assert paper.title_zh == result
+
+
+def test_title_translation_error_returns_none(llm_params):
+    from types import SimpleNamespace
+
+    broken_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=lambda **kw: (_ for _ in ()).throw(RuntimeError("boom")))
+        )
+    )
+    paper = make_sample_paper()
+    result = paper.generate_title_translation(broken_client, llm_params)
+    assert result is None
+    assert paper.title_zh is None

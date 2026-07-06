@@ -21,6 +21,33 @@ class Paper:
     tldr: Optional[str] = None
     affiliations: Optional[list[str]] = None
     score: Optional[float] = None
+    title_zh: Optional[str] = None
+
+    def _translate_title_with_llm(self, openai_client: OpenAI, llm_params: dict) -> str:
+        response = openai_client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional academic translator. Translate the given "
+                        "scientific paper title into natural, accurate Chinese. Only output "
+                        "the translated title itself, with no quotes, explanation, or extra text."
+                    ),
+                },
+                {"role": "user", "content": self.title},
+            ],
+            **llm_params.get('generation_kwargs', {})
+        )
+        return response.choices[0].message.content.strip()
+
+    def generate_title_translation(self, openai_client: OpenAI, llm_params: dict) -> Optional[str]:
+        try:
+            title_zh = self._translate_title_with_llm(openai_client, llm_params)
+            self.title_zh = title_zh
+            return title_zh
+        except Exception as e:
+            logger.warning(f"Failed to translate title of {self.url}: {e}")
+            return None
 
     def _generate_tldr_with_llm(self, openai_client:OpenAI,llm_params:dict) -> str:
         lang = llm_params.get('language', 'English')

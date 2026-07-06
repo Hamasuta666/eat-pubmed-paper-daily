@@ -82,11 +82,16 @@ def _build_source_badge(source: str | None, journal: str | None) -> str:
 
 
 def get_block_html(title:str, authors:str, rate:str, tldr:str, pdf_url:str,
-                   affiliations:str=None, source:str=None, journal:str=None, stars:str=""):
+                   affiliations:str=None, source:str=None, journal:str=None, stars:str="",
+                   title_zh:str=None):
     source_badge = _build_source_badge(source, journal)
     source_row = (
         f'<tr><td style="padding: 4px 0 6px 0;">{source_badge}</td></tr>'
         if source_badge else ""
+    )
+    title_zh_row = (
+        f'<tr><td style="font-size: 15px; color: #555; padding-top: 2px;">{title_zh}</td></tr>'
+        if title_zh else ""
     )
     block_template = """
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #f9f9f9;">
@@ -95,6 +100,7 @@ def get_block_html(title:str, authors:str, rate:str, tldr:str, pdf_url:str,
             {title}
         </td>
     </tr>
+    {title_zh_row}
     {source_row}
     <tr>
         <td style="font-size: 14px; color: #666; padding: 4px 0;">
@@ -123,7 +129,7 @@ def get_block_html(title:str, authors:str, rate:str, tldr:str, pdf_url:str,
     return block_template.format(
         title=title, authors=authors, rate=rate, tldr=tldr,
         pdf_url=pdf_url, affiliations=affiliations,
-        source_row=source_row, stars=stars,
+        source_row=source_row, stars=stars, title_zh_row=title_zh_row,
     )
 
 def get_stars(score:float):
@@ -190,6 +196,7 @@ def render_email(papers: list[Paper], summary: str | None = None) -> str:
             source=p.source,
             journal=p.journal,
             stars=stars,
+            title_zh=p.title_zh,
         ))
 
     content = '<br>' + '</br><br>'.join(parts) + '</br>'

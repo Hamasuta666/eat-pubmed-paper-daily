@@ -34,7 +34,8 @@ This project finds new papers (arXiv / bioRxiv / medRxiv / PubMed) that may attr
 
 ## ✨ Features
 - Totally free! All the calculation can be done in the Github Action runner locally within its quota (for public repo).
-- AI-generated TL;DR for you to quickly pick up target papers.
+- AI-generated TL;DR for you to quickly pick up target papers (Chinese by default).
+- **Chinese title translation**: Each paper's English title is followed by an AI-translated Chinese title, so you don't need to read the English title first.
 - Affiliations of the paper are resolved and presented.
 - Links of PDF and code implementation (if any) presented in the e-mail.
 - List of papers sorted by relevance with your recent research interest.
@@ -109,7 +110,7 @@ llm:
   generation_kwargs:
     max_tokens: 16384
     model: gpt-4o-mini # Replace with a model supported by your LLM provider
-  language: English # Preferred language for TL;DR summaries. Example: Chinese
+  language: Chinese # Preferred language for TL;DR summaries. Example: English
 
 reranker:
   local:

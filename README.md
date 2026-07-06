@@ -34,7 +34,8 @@
 
 ## ✨ 功能特性
 - 完全免费！所有计算都在 Github Action Runner 上本地完成，处于其免费额度内（公开仓库）。
-- AI 生成 TL;DR 摘要，帮你快速定位目标论文。
+- AI 生成 TL;DR 摘要（默认中文），帮你快速定位目标论文。
+- **中文标题翻译**：每篇论文在英文标题下方附上 AI 翻译的中文标题，无需先看懂英文标题。
 - 自动解析并展示论文的作者机构信息。
 - 邮件中附带论文 PDF 链接及代码实现链接（如有）。
 - 论文列表按与你近期研究兴趣的相关度排序。
@@ -109,7 +110,7 @@ llm:
   generation_kwargs:
     max_tokens: 16384
     model: gpt-4o-mini # 换成你所用 LLM 服务支持的模型名
-  language: English # TL;DR 摘要使用的语言。示例: Chinese
+  language: Chinese # TL;DR 摘要使用的语言。示例: English
 
 reranker:
   local:

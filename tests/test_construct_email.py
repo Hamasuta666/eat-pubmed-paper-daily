@@ -58,6 +58,18 @@ def test_render_email_falls_back_to_url_when_pdf_url_missing():
     assert 'href="None"' not in html
 
 
+def test_render_email_shows_translated_title_when_present():
+    paper = make_sample_paper(title_zh="示例论文标题", score=7.0, tldr="ok")
+    html = render_email([paper])
+    assert "示例论文标题" in html
+
+
+def test_render_email_omits_translated_title_row_when_absent():
+    paper = make_sample_paper(title_zh=None, score=7.0, tldr="ok")
+    html = render_email([paper])
+    assert "示例论文标题" not in html
+
+
 def test_render_email_shows_stars_for_high_score():
     paper = make_sample_paper(score=8.5, tldr="ok")
     html = render_email([paper])

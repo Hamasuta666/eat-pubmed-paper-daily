@@ -323,11 +323,12 @@ class Executor:
             )
             reranked_papers = reranked_papers[:self.config.executor.max_paper_num]
 
-            # Step 5: generate TLDRs and affiliations
-            logger.info("Generating TLDR and affiliations...")
+            # Step 5: generate TLDRs, affiliations and Chinese title translations
+            logger.info("Generating TLDR, affiliations and title translations...")
             for p in tqdm(reranked_papers):
                 p.generate_tldr(self.openai_client, self.config.llm)
                 p.generate_affiliations(self.openai_client, self.config.llm)
+                p.generate_title_translation(self.openai_client, self.config.llm)
 
         elif not self.config.executor.send_empty:
             logger.info("No new papers found. No email will be sent.")
