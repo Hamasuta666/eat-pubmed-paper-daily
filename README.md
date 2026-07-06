@@ -3,7 +3,7 @@
  <img width=200px height=200px src="assets/logo.svg" alt="logo"></a>
 </p>
 
-<h3 align="center">Eat PubMed Paper Daily</h3>
+<h3 align="center">每日吃论文（Eat PubMed Paper Daily）</h3>
 
 <div align="center">
 
@@ -14,65 +14,69 @@
 
 </div>
 
+<p align="center">
+  <b>中文</b> | <a href="README_EN.md">English</a>
+</p>
+
 ---
 
-<p align="center"> Recommend new arXiv / bioRxiv / medRxiv / PubMed papers of your interest daily according to your Zotero library and/or research keywords.
+<p align="center"> 根据你的 Zotero 文献库和/或研究关键词，每天为你推荐感兴趣的 arXiv / bioRxiv / medRxiv / PubMed 新论文。
     <br>
 </p>
 
-## 🧐 About <a name = "about"></a>
+## 🧐 关于本项目 <a name = "about"></a>
 
-> Track new scientific researches of your interest by just forking (and staring) this repo!😊
+> 只需 Fork（并点个 star😊）本仓库，即可持续追踪你感兴趣的最新科研进展！
 
-This project finds new papers (arXiv / bioRxiv / medRxiv / PubMed) that may attract you based on the context of your Zotero library and/or a natural-language description of your research interests, and then sends the result to your mailbox📮. It runs entirely as a Github Action Workflow with **zero cost**, **no server to maintain**, and **few configuration** of Github Action environment variables for periodic **automatic** delivery.
+本项目会根据你的 Zotero 文献库内容，和/或你用自然语言描述的研究兴趣，从 arXiv / bioRxiv / medRxiv / PubMed 中筛选出可能吸引你的新论文，并将结果发送到你的邮箱📮。整个流程完全基于 Github Action Workflow 运行，**零成本**、**无需维护服务器**，只需在 Github Action 中配置**少量环境变量**，即可实现周期性**自动**推送。
 
-> This project is a customized fork of [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily), extended with PubMed retrieval and several personalization features (keyword/Zotero scoring blend, source mix control, favorite journals, AI opening summary, etc.). See [Acknowledgement](#-acknowledgement) below.
+> 本项目改造自 [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily)，在原项目基础上新增了 PubMed 检索以及一系列个性化功能（关键词/Zotero 混合评分、来源比例调节、收藏期刊加权、AI 开场总结等）。详见下方[致谢](#-致谢)部分。
 
-## ✨ Features
-- Totally free! All the calculation can be done in the Github Action runner locally within its quota (for public repo).
-- AI-generated TL;DR for you to quickly pick up target papers.
-- Affiliations of the paper are resolved and presented.
-- Links of PDF and code implementation (if any) presented in the e-mail.
-- List of papers sorted by relevance with your recent research interest.
-- Fast deployment via fork this repo and set environment variables in the Github Action Page.
-- Support LLM API for generating TL;DR of papers.
-- Ignore unwanted Zotero papers using a list of glob patterns.
-- **Flexible scoring mode**: 5-level dial to blend keyword-based scoring and Zotero-library-based scoring. Supports users without a Zotero library (keyword-only mode).
-- **Natural language keywords**: Describe your research interest in plain language; LLM decomposes it into structured search terms automatically.
-- **PubMed source**: Retrieve papers from PubMed (abstract-only), suitable for clinical research communities.
-- **Source mix dial**: 5-level dial to control the ratio of PubMed vs. arXiv/bioRxiv/medRxiv papers.
-- **Custom retrieval window**: Retrieve papers from the past N days, not just yesterday.
-- **Custom sending interval**: Configure weekly or multi-day email delivery (see [docs/cron-guide.md](docs/cron-guide.md)).
-- **AI opening summary**: Each email starts with a Chinese summary of the batch, followed by an encouraging message in your chosen style (元气少女 / 温柔学长 / 和蔼导师).
-- Support multiple sources of papers to retrieve:
+## ✨ 功能特性
+- 完全免费！所有计算都在 Github Action Runner 上本地完成，处于其免费额度内（公开仓库）。
+- AI 生成 TL;DR 摘要，帮你快速定位目标论文。
+- 自动解析并展示论文的作者机构信息。
+- 邮件中附带论文 PDF 链接及代码实现链接（如有）。
+- 论文列表按与你近期研究兴趣的相关度排序。
+- 只需 Fork 本仓库并在 Github Action 页面设置环境变量，即可快速部署。
+- 支持通过 LLM API 生成论文 TL;DR。
+- 支持用一组 glob 匹配模式忽略不需要的 Zotero 文献。
+- **灵活评分模式**：5 档调节旋钮，用于混合"关键词评分"与"Zotero 文献库评分"的权重，也支持没有 Zotero 文献库的用户（纯关键词模式）。
+- **自然语言关键词**：用大白话描述你的研究兴趣，LLM 会自动将其拆解为结构化的检索词。
+- **PubMed 数据源**：支持从 PubMed 检索论文（仅摘要），适合临床医学研究方向的用户。
+- **来源比例调节**：5 档调节旋钮，控制 PubMed 与 arXiv/bioRxiv/medRxiv 论文的比例。
+- **自定义检索窗口**：可检索过去 N 天内发布的论文，而不仅限于昨天。
+- **自定义发送周期**：支持配置按周或多日发送邮件（详见 [docs/cron-guide.md](docs/cron-guide.md)）。
+- **AI 开场总结**：每封邮件开头会附上本批论文的中文总结，以及一段你可选择风格（元气少女 / 温柔学长 / 和蔼导师）的鼓励语。
+- 支持从以下多个来源检索论文：
   - arxiv
   - biorxiv
   - medrxiv
-  - **pubmed** (new)
+  - **pubmed**（新增）
 
-## 🚀 Usage
-### Quick Start
-1. Fork (and star😘) this repo.
+## 🚀 使用方法
+### 快速开始
+1. Fork（并点个 star😘）本仓库。
 
-2. Go to your fork's **Settings → Secrets and variables → Actions → Secrets** and set the following repository secrets. They are invisible to anyone including you once they are set, for security.
+2. 进入你 Fork 后仓库的 **Settings → Secrets and variables → Actions → Secrets**，设置以下仓库 Secrets。出于安全考虑，设置后的值对所有人（包括你自己）都不可见。
 
-| Key |Description | Example |
+| 名称 |说明 | 示例 |
 | :---  | :---  | :--- |
-| ZOTERO_ID  | User ID of your Zotero account. **User ID is not your username, but a sequence of numbers.** Get your ID from [here](https://www.zotero.org/settings/security) (shown as "Your userID for use in API calls"). | 12345678  |
-| ZOTERO_KEY | An Zotero API key with read access. Get a key from [here](https://www.zotero.org/settings/security).  | AB5tZ877P2j7Sm2Mragq041H   |
-| SENDER | The email account of the SMTP server that sends you email. | abc@qq.com |
-| SENDER_PASSWORD | The password of the sender account. Note that it's not necessarily the password for logging in the e-mail client, but the authentication code for SMTP service. Ask your email provider for this.   | abcdefghijklmn |
-| RECEIVER | The e-mail address that receives the paper list. | abc@outlook.com |
-| OPENAI_API_KEY | API Key when using the API to access LLMs. You can get FREE API for using advanced open source LLMs in [SiliconFlow](https://cloud.siliconflow.cn/i/b3XhBRAm). | sk-xxx |
-| OPENAI_API_BASE | API URL when using the API to access LLMs. | https://api.siliconflow.cn/v1 |
+| ZOTERO_ID  | 你的 Zotero 账号 User ID。**User ID 不是用户名，而是一串数字。** 可以从[这里](https://www.zotero.org/settings/security)获取（页面上显示为 "Your userID for use in API calls"）。 | 12345678  |
+| ZOTERO_KEY | 一个具有读取权限的 Zotero API Key。从[这里](https://www.zotero.org/settings/security)获取。  | AB5tZ877P2j7Sm2Mragq041H   |
+| SENDER | 用于发送邮件的 SMTP 服务器邮箱账号。 | abc@qq.com |
+| SENDER_PASSWORD | 发送邮箱的密码。注意这通常不是登录邮箱客户端的密码，而是该邮箱 SMTP 服务的授权码，请向你的邮箱服务商获取。   | abcdefghijklmn |
+| RECEIVER | 接收论文推送列表的邮箱地址。 | abc@outlook.com |
+| OPENAI_API_KEY | 调用 LLM API 所需的 API Key。你可以在 [SiliconFlow](https://cloud.siliconflow.cn/i/b3XhBRAm) 免费获取调用优秀开源大模型的 API。 | sk-xxx |
+| OPENAI_API_BASE | 调用 LLM API 的地址。 | https://api.siliconflow.cn/v1 |
 
-Then go to **Settings → Secrets and variables → Actions → Variables** and add a repository variable named `CUSTOM_CONFIG` for your custom configuration.
-Paste the following content into the value of `CUSTOM_CONFIG` variable:
+然后进入 **Settings → Secrets and variables → Actions → Variables**，新增一个名为 `CUSTOM_CONFIG` 的仓库变量，用于个性化配置。
+将以下内容粘贴到 `CUSTOM_CONFIG` 变量的值中：
 ```yaml
 zotero:
   user_id: ${oc.env:ZOTERO_ID}
   api_key: ${oc.env:ZOTERO_KEY}
-  include_path: null # Or e.g. ["2026/survey/**", "2026/reading-group/**"]
+  include_path: null # 或例如 ["2026/survey/**", "2026/reading-group/**"]
 
 email:
   sender: ${oc.env:SENDER}
@@ -91,56 +95,56 @@ llm:
 source:
   arxiv:
     category: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false # Set to true to include arXiv cross-list papers in these categories.
+    include_cross_list: false # 设为 true 可包含这些分类下的 arXiv 交叉列表论文。
 
 executor:
   debug: ${oc.env:DEBUG,null}
   source: ['arxiv']
 ```
-Set `source.arxiv.include_cross_list: true` if you want cross-listed papers included.
+如果想包含交叉列表论文，将 `source.arxiv.include_cross_list` 设为 `true`。
 >[!NOTE]
-> `${oc.env:XXX,yyy}` means the value of the environment variable `XXX`. If the variable is not set, the default value `yyy` will be used.
+> `${oc.env:XXX,yyy}` 表示读取环境变量 `XXX` 的值；如果该环境变量未设置，则使用默认值 `yyy`。
 
-Here is the full configuration, `???` means the value must be filled in:
+以下是完整配置项，`???` 表示该值必须填写：
 ```yaml
 zotero:
-  user_id: null # Required when search.mode > 1. Example: 12345678
-  api_key: null # Required when search.mode > 1. Example: AB5tZ877P2j7Sm2Mragq041H
-  include_path: null # Example: ["2026/survey/**", "2026/reading-group/**"]
-  ignore_path: null # Example: ["archive/**"]
+  user_id: null # 当 search.mode > 1 时必填。示例: 12345678
+  api_key: null # 当 search.mode > 1 时必填。示例: AB5tZ877P2j7Sm2Mragq041H
+  include_path: null # 示例: ["2026/survey/**", "2026/reading-group/**"]
+  ignore_path: null # 示例: ["archive/**"]
 
 search:
-  mode: 5 # 1=keyword only, 2=more keyword/less Zotero, 3=equal, 4=less keyword/more Zotero, 5=Zotero only
-  keywords: null # Required when mode < 5. Natural language description of your interests.
-                 # Example: "hydrogel materials in ophthalmology combined with traditional Chinese medicine"
+  mode: 5 # 1=纯关键词, 2=偏关键词/少Zotero, 3=各占一半, 4=少关键词/偏Zotero, 5=纯Zotero
+  keywords: null # 当 mode < 5 时必填，用自然语言描述你的研究兴趣。
+                 # 示例: "眼科水凝胶材料结合中医药"
 
 source:
-  mix_mode: 5 # 1=PubMed only, 2=more PubMed/less arXiv, 3=equal, 4=less PubMed/more arXiv, 5=arXiv only
+  mix_mode: 5 # 1=纯PubMed, 2=偏PubMed/少arXiv, 3=各占一半, 4=少PubMed/偏arXiv, 5=纯arXiv
   arxiv:
-    category: null # Example: ["cs.AI","cs.CV","cs.LG","cs.CL"]
+    category: null # 示例: ["cs.AI","cs.CV","cs.LG","cs.CL"]
     include_cross_list: false
   biorxiv:
-    category: null # Example: ["biochemistry","animal behavior and cognition"]
+    category: null # 示例: ["biochemistry","animal behavior and cognition"]
   medrxiv:
-    category: null # Example: ["psychiatry and clinical psychology", "neurology"]
+    category: null # 示例: ["psychiatry and clinical psychology", "neurology"]
   pubmed:
-    max_results: 200 # Max papers to fetch from PubMed. Example: 200
+    max_results: 200 # 从 PubMed 抓取的最大论文数。示例: 200
 
 email:
-  sender: ??? # Example: abc@qq.com
-  receiver: ??? # Example: abc@outlook.com
-  smtp_server: ??? # Example: smtp.qq.com
-  smtp_port: ??? # Example: 465
-  sender_password: ??? # SMTP authentication code (not your login password)
+  sender: ??? # 示例: abc@qq.com
+  receiver: ??? # 示例: abc@outlook.com
+  smtp_server: ??? # 示例: smtp.qq.com
+  smtp_port: ??? # 示例: 465
+  sender_password: ??? # SMTP 授权码（不是登录密码）
 
 llm:
   api:
-    key: ??? # Example: sk-xxx
-    base_url: ??? # Example: https://api.openai.com/v1
+    key: ??? # 示例: sk-xxx
+    base_url: ??? # 示例: https://api.openai.com/v1
   generation_kwargs:
     max_tokens: 16384
     model: ???
-  language: English # Preferred language for TL;DR summaries. Example: Chinese
+  language: English # TL;DR 摘要使用的语言。示例: Chinese
 
 reranker:
   local:
@@ -158,50 +162,50 @@ executor:
   debug: false
   send_empty: false
   max_paper_num: 100
-  source: ??? # Preprint sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
-  reranker: local # 'local' or 'api'
-  retrieval_days: 1 # Days back to retrieve papers. Example: 7 for last week
-  send_interval_days: 1 # For cron reference only. See docs/cron-guide.md. Example: 7
+  source: ??? # 预印本来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']
+  reranker: local # 'local' 或 'api'
+  retrieval_days: 1 # 回溯检索的天数。示例: 7 表示检索最近一周
+  send_interval_days: 1 # 仅供 cron 配置参考，详见 docs/cron-guide.md。示例: 7
 ```
 
-That's all! Now you can test the workflow by manually triggering it from the **Actions** tab of your fork (select the "Test" workflow → "Run workflow").
+配置完成！现在你可以在 Fork 仓库的 **Actions** 标签页手动触发工作流进行测试（选择 "Test" 工作流 → "Run workflow"）。
 
 > [!NOTE]
-> The Test-Workflow Action is the debug version of the main workflow (Send-emails-daily), which always retrieve 5 arxiv papers regardless of the date. While the main workflow will be automatically triggered everyday and retrieve new papers released yesterday. There is no new arxiv paper at weekends and holiday, in which case you may see "No new papers found" in the log of main workflow.
+> Test 工作流是主工作流（Send-emails-daily）的调试版本，它总是固定抓取 5 篇 arxiv 论文，不受日期限制。而主工作流会每天自动触发，检索昨天发布的新论文。周末和节假日通常没有新的 arxiv 论文，此时主工作流的日志中可能会看到 "No new papers found"。
 
-Then check the log and the receiver email after it finishes.
+工作流运行结束后，请检查日志以及接收邮箱。
 
-By default, the main workflow runs on 22:00 UTC everyday. You can change this time by editing the workflow config `.github/workflows/main.yml`. See [docs/cron-guide.md](docs/cron-guide.md) for detailed instructions on configuring custom sending intervals.
+默认情况下，主工作流每天 UTC 时间 22:00 运行。你可以通过编辑 `.github/workflows/main.yml` 中的工作流配置来修改这个时间。关于配置自定义发送周期的详细说明，请参考 [docs/cron-guide.md](docs/cron-guide.md)。
 
-### Local Running
-Supported by [uv](https://github.com/astral-sh/uv), this workflow can easily run on your local device if uv is installed:
+### 本地运行
+本项目基于 [uv](https://github.com/astral-sh/uv) 管理依赖，只要安装了 uv，即可在本地设备上轻松运行：
 ```bash
-# set all the environment variables
+# 先设置好所有需要的环境变量
 # export ZOTERO_ID=xxxx
 # ...
 cd eat-pubmed-paper-daily
 uv run src/zotero_arxiv_daily/main.py
 ```
 
-## 📖 How it works
-This project firstly retrieves all the papers in your Zotero library (if configured) and all the new papers released from the configured sources (arXiv / bioRxiv / medRxiv / PubMed), via corresponding API. Then it calculates the embedding of each paper's abstract via an embedding model, and/or matches it against your natural-language keywords. The score of a paper blends keyword relevance and its weighted average similarity to your Zotero papers (newer paper added to the library has higher weight). The TLDR of each paper is generated by LLM, given the text extracted from the paper.
+## 📖 工作原理
+本项目首先通过相应 API 获取你 Zotero 文献库中的所有论文（如果已配置），以及从已配置来源（arXiv / bioRxiv / medRxiv / PubMed）发布的所有新论文。然后通过 embedding 模型计算每篇论文摘要的向量表示，和/或将其与你的自然语言关键词进行匹配。一篇论文的最终得分融合了关键词相关度，以及它与你 Zotero 文献库论文的加权平均相似度（越晚加入文献库的论文权重越高）。每篇论文的 TL;DR 由 LLM 根据从论文中提取的文本生成。
 
-## 📌 Limitations
-- The recommendation algorithm is very simple, it may not accurately reflect your interest. Welcome better ideas for improving the algorithm!
-- High `MAX_PAPER_NUM` can lead the execution time exceed the limitation of Github Action runner (6h per execution for public repo, and 2000 mins per month for private repo). Commonly, the quota given to public repo is definitely enough for individual use. If you have special requirements, you can deploy the workflow in your own server, or use a self-hosted Github Action runner, or pay for the exceeded execution time.
+## 📌 局限性
+- 推荐算法非常简单，可能无法精准反映你的兴趣。欢迎提出更好的改进思路！
+- 过高的 `MAX_PAPER_NUM` 可能导致执行时间超出 Github Action Runner 的限制（公开仓库每次执行最长 6 小时，每月总计 2000 分钟）。通常公开仓库的免费额度对个人使用来说完全够用。如果你有特殊需求，可以将工作流部署到自己的服务器上，或使用自托管的 Github Action Runner，或为超出的执行时间付费。
 
-## 👯‍♂️ Contribution
-Any issue and PR are welcomed!
+## 👯‍♂️ 贡献
+欢迎提交 Issue 和 PR！
 
-## 📃 License
-Distributed under the AGPLv3 License. See `LICENSE` for detail.
+## 📃 许可证
+基于 AGPLv3 许可证发布，详见 `LICENSE` 文件。
 
-## ❤️ Acknowledgement
-- [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily) — the original project this repo is forked and extended from
+## ❤️ 致谢
+- [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily) —— 本项目 Fork 和扩展的原始项目
 - [pyzotero](https://github.com/urschrei/pyzotero)
 - [arxiv](https://github.com/lukasschwab/arxiv.py)
 - [sentence_transformers](https://github.com/UKPLab/sentence-transformers)
 
-## 🌟 Star History
+## 🌟 Star 历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=HanluXU/eat-pubmed-paper-daily&type=Date)](https://star-history.com/#HanluXU/eat-pubmed-paper-daily&Date)
