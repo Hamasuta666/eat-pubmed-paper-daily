@@ -46,7 +46,7 @@ The app follows a linear pipeline orchestrated by `Executor` (`src/zotero_arxiv_
 
 ### Configuration
 
-Uses Hydra + OmegaConf. Config is composed from `config/base.yaml` (defaults) + `config/custom.yaml` (user overrides). Environment variables are interpolated via `${oc.env:VAR_NAME,default}` syntax. Entry point uses `@hydra.main`.
+Uses Hydra + OmegaConf. Config is composed from `config/base.yaml` (defaults) + `config/characters.yaml` (email opening-summary character pool, `executor.character_pool`) + `config/custom.yaml` (user overrides, last so it wins). Environment variables are interpolated via `${oc.env:VAR_NAME,default}` syntax. Entry point uses `@hydra.main`.
 
 ### Data Classes
 

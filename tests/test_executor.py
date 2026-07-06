@@ -241,6 +241,49 @@ def test_run_no_papers_send_empty_false(config, monkeypatch):
     assert len(sent) == 0, "No email should be sent when no papers and send_empty=false"
 
 
+# ---------------------------------------------------------------------------
+# generate_email_summary — character pool now lives in config/characters.yaml
+# ---------------------------------------------------------------------------
+
+
+def test_generate_email_summary_returns_empty_when_character_pool_empty(config, monkeypatch):
+    """Setting executor.character_pool to [] disables the opening summary."""
+    from omegaconf import open_dict
+
+    from tests.canned_responses import make_sample_paper, make_stub_openai_client
+
+    with open_dict(config):
+        config.executor.character_pool = []
+
+    executor = Executor.__new__(Executor)
+    executor.config = config
+    executor.openai_client = make_stub_openai_client()
+    monkeypatch.setattr("zotero_arxiv_daily.executor.random.choice", lambda pool: pytest.fail("should not be called"))
+
+    summary = executor.generate_email_summary([make_sample_paper()])
+
+    assert summary == ""
+
+
+def test_generate_email_summary_uses_configured_character_pool(config):
+    """The opening summary is voiced by a character drawn from config.executor.character_pool
+    and signed off with that character's name."""
+    from omegaconf import open_dict
+
+    from tests.canned_responses import make_sample_paper, make_stub_openai_client
+
+    with open_dict(config):
+        config.executor.character_pool = [{"name": "测试角色", "prompt": "You are a test character."}]
+
+    executor = Executor.__new__(Executor)
+    executor.config = config
+    executor.openai_client = make_stub_openai_client()
+
+    summary = executor.generate_email_summary([make_sample_paper()])
+
+    assert summary.endswith("—— 测试角色 如是说")
+
+
 def test_executor_rejects_empty_source_list(config):
     """mix_mode=5 (arxiv-family only) with an empty executor.source list leaves
     no retriever configured; this must fail fast with a clear error instead of

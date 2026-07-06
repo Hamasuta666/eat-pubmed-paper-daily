@@ -47,7 +47,7 @@
 - **来源比例调节**：5 档调节旋钮，控制 PubMed 与 arXiv/bioRxiv/medRxiv 论文的比例。
 - **自定义检索窗口**：可检索过去 N 天内发布的论文，而不仅限于昨天。
 - **自定义发送周期**：支持配置按周或多日发送邮件（详见 [docs/cron-guide.md](docs/cron-guide.md)）。
-- **AI 开场总结**：每封邮件开头会附上本批论文的中文总结，以及一段你可选择风格（元气少女 / 温柔学长 / 和蔼导师）的鼓励语。
+- **AI 开场总结**：每封邮件开头会附上本批论文的中文总结，并随机扮演一个二次元/影视/文学角色（如灶门炭治郎、赫敏、甄嬛、邓布利多校长等）说一段鼓励语。角色池可在 [config/characters.yaml](config/characters.yaml) 中自由增删、修改，详见[自定义开场总结角色](#自定义开场总结角色)。
 - 支持从以下多个来源检索论文：
   - arxiv
   - biorxiv
@@ -189,8 +189,36 @@ cd eat-pubmed-paper-daily
 uv run src/zotero_arxiv_daily/main.py
 ```
 
+### 自定义开场总结角色 <a name = "自定义开场总结角色"></a>
+每次发送邮件时，程序会从 [config/characters.yaml](config/characters.yaml) 中随机抽取一个角色，用它的口吻生成开场总结和鼓励语。你可以：
+- 直接编辑 Fork 仓库中的 `config/characters.yaml`：增加、删除或修改角色。每个角色包含 `name`（角色名）和 `prompt`（system prompt）两个字段。
+- 或者不修改仓库文件，改为在 `CUSTOM_CONFIG` 变量中新增 `executor.character_pool` 字段来完全覆盖默认角色池。
+- 将 `character_pool` 设为空列表 `[]` 可以完全关闭 AI 开场总结功能。
+
 ## 📖 工作原理
 本项目首先通过相应 API 获取你 Zotero 文献库中的所有论文（如果已配置），以及从已配置来源（arXiv / bioRxiv / medRxiv / PubMed）发布的所有新论文。然后通过 embedding 模型计算每篇论文摘要的向量表示，和/或将其与你的自然语言关键词进行匹配。一篇论文的最终得分融合了关键词相关度，以及它与你 Zotero 文献库论文的加权平均相似度（越晚加入文献库的论文权重越高）。每篇论文的 TL;DR 由 LLM 根据从论文中提取的文本生成。
+
+```mermaid
+flowchart TD
+    A["拉取 Zotero 文献库"] --> B["按 include_path / ignore_path<br/>过滤语料库"]
+    K["自然语言关键词描述<br/>（search.mode < 5 时启用）"] --> KX["LLM 拆解为结构化检索词"]
+    subgraph S["多源检索当日新论文"]
+        S1[arXiv]
+        S2[bioRxiv]
+        S3[medRxiv]
+        S4[PubMed]
+    end
+    S -->|"按 source.mix_mode 比例混合"| C["候选论文池"]
+    B --> D["Embedding 相似度评分与重排序"]
+    KX --> D
+    C --> D
+    D --> E["按综合得分排序，取 Top N"]
+    E --> F["LLM 生成 TL;DR + 作者机构"]
+    E --> G["随机抽取角色<br/>生成 AI 开场总结"]
+    F --> H["渲染邮件 HTML"]
+    G --> H
+    H --> I["通过 SMTP 发送邮件"]
+```
 
 ## 📌 局限性
 - 推荐算法非常简单，可能无法精准反映你的兴趣。欢迎提出更好的改进思路！
