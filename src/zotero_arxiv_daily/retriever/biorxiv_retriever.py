@@ -4,6 +4,7 @@ from ..protocol import Paper
 from loguru import logger
 from typing import Any
 from time import sleep
+from datetime import datetime, timedelta
 
 @register_retriever("biorxiv")
 class BiorxivRetriever(BaseRetriever):
@@ -15,7 +16,12 @@ class BiorxivRetriever(BaseRetriever):
             raise ValueError(f"category must be specified for {self.name}")
 
     def _retrieve_raw_papers(self) -> list[dict[str, Any]]:
-        api_url = f"https://api.biorxiv.org/details/{self.server}/2d"
+        retrieval_days = int(self.config.executor.get("retrieval_days", 1))
+        end_date = datetime.utcnow().strftime("%Y-%m-%d")
+        start_date = (datetime.utcnow() - timedelta(days=retrieval_days)).strftime("%Y-%m-%d")
+        date_range = f"{start_date}/{end_date}"
+        api_url = f"https://api.biorxiv.org/details/{self.server}/{date_range}"
+
         retry_num = 10
         delay_time = 10
         for i in range(retry_num):
@@ -30,13 +36,10 @@ class BiorxivRetriever(BaseRetriever):
                     logger.warning(f"Failed to retrieve papers: {str(e)}. Retry in {delay_time} seconds.")
                     sleep(delay_time)
         result = response.json()
-        collection = result['collection']
+        collection = result.get('collection', [])
         if len(collection) == 0:
-            logger.warning(f"No paper found. API Message: {result['messages']}")
+            logger.warning(f"No paper found. API Message: {result.get('messages', '')}")
             return []
-        all_dates = set(c['date'] for c in collection)
-        latest_date = sorted(all_dates)[-1]
-        collection = [c for c in collection if c['date'] == latest_date]
         categories = [c.lower() for c in self.retriever_config.category]
         collection = [c for c in collection if c['category'] in categories]
         if self.config.executor.debug:

@@ -3,33 +3,30 @@
  <img width=200px height=200px src="assets/logo.svg" alt="logo"></a>
 </p>
 
-<h3 align="center">Zotero-arXiv-Daily</h3>
+<h3 align="center">Eat PubMed Paper Daily</h3>
 
 <div align="center">
 
   [![Status](https://img.shields.io/badge/status-active-success.svg)]()
-  ![Stars](https://img.shields.io/github/stars/TideDra/zotero-arxiv-daily?style=flat)
-  [![GitHub Issues](https://img.shields.io/github/issues/TideDra/zotero-arxiv-daily)](https://github.com/TideDra/zotero-arxiv-daily/issues)
-  [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/TideDra/zotero-arxiv-daily)](https://github.com/TideDra/zotero-arxiv-daily/pulls)
-  [![License](https://img.shields.io/github/license/TideDra/zotero-arxiv-daily)](/LICENSE)
-  [<img src="https://api.gitsponsors.com/api/badge/img?id=893025857" height="20">](https://api.gitsponsors.com/api/badge/link?p=PKMtRut1dWWuC1oFdJweyDSvJg454/GkdIx4IinvBblaX2AY4rQ7FYKAK1ZjApoiNhYEeduIEhfeZVIwoIVlvcwdJXVFD2nV2EE5j6lYXaT/RHrcsQbFl3aKe1F3hliP26OMayXOoZVDidl05wj+yg==)
+  ![Stars](https://img.shields.io/github/stars/HanluXU/eat-pubmed-paper-daily?style=flat)
+  [![GitHub Issues](https://img.shields.io/github/issues/HanluXU/eat-pubmed-paper-daily)](https://github.com/HanluXU/eat-pubmed-paper-daily/issues)
+  [![License](https://img.shields.io/github/license/HanluXU/eat-pubmed-paper-daily)](/LICENSE)
 
 </div>
 
 ---
 
-<p align="center"> Recommend new arxiv papers of your interest daily according to your Zotero library.
-    <br> 
+<p align="center"> Recommend new arXiv / bioRxiv / medRxiv / PubMed papers of your interest daily according to your Zotero library and/or research keywords.
+    <br>
 </p>
-
-> [!IMPORTANT]
-> Please keep an eye on this repo, and merge your forked repo in time when there is any update of this upstream, in order to enjoy new features and fix found bugs.
 
 ## 🧐 About <a name = "about"></a>
 
 > Track new scientific researches of your interest by just forking (and staring) this repo!😊
 
-*Zotero-arXiv-Daily* finds arxiv papers that may attract you based on the context of your Zotero library, and then sends the result to your mailbox📮. It can be deployed as Github Action Workflow with **zero cost**, **no installation**, and **few configuration** of Github Action environment variables for daily **automatic** delivery.
+This project finds new papers (arXiv / bioRxiv / medRxiv / PubMed) that may attract you based on the context of your Zotero library and/or a natural-language description of your research interests, and then sends the result to your mailbox📮. It runs entirely as a Github Action Workflow with **zero cost**, **no server to maintain**, and **few configuration** of Github Action environment variables for periodic **automatic** delivery.
+
+> This project is a customized fork of [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily), extended with PubMed retrieval and several personalization features (keyword/Zotero scoring blend, source mix control, favorite journals, AI opening summary, etc.). See [Acknowledgement](#-acknowledgement) below.
 
 ## ✨ Features
 - Totally free! All the calculation can be done in the Github Action runner locally within its quota (for public repo).
@@ -40,27 +37,28 @@
 - Fast deployment via fork this repo and set environment variables in the Github Action Page.
 - Support LLM API for generating TL;DR of papers.
 - Ignore unwanted Zotero papers using a list of glob patterns.
+- **Flexible scoring mode**: 5-level dial to blend keyword-based scoring and Zotero-library-based scoring. Supports users without a Zotero library (keyword-only mode).
+- **Natural language keywords**: Describe your research interest in plain language; LLM decomposes it into structured search terms automatically.
+- **PubMed source**: Retrieve papers from PubMed (abstract-only), suitable for clinical research communities.
+- **Source mix dial**: 5-level dial to control the ratio of PubMed vs. arXiv/bioRxiv/medRxiv papers.
+- **Custom retrieval window**: Retrieve papers from the past N days, not just yesterday.
+- **Custom sending interval**: Configure weekly or multi-day email delivery (see [docs/cron-guide.md](docs/cron-guide.md)).
+- **AI opening summary**: Each email starts with a Chinese summary of the batch, followed by an encouraging message in your chosen style (元气少女 / 温柔学长 / 和蔼导师).
 - Support multiple sources of papers to retrieve:
   - arxiv
   - biorxiv
   - medrxiv
-
-## 📷 Screenshot
-![screenshot](./assets/screenshot.png)
+  - **pubmed** (new)
 
 ## 🚀 Usage
 ### Quick Start
 1. Fork (and star😘) this repo.
-![fork](./assets/fork.png)
 
-2. Set Github Action environment variables.
-![secrets](./assets/secrets.png)
-
-Below are all the secrets you need to set. They are invisible to anyone including you once they are set, for security.
+2. Go to your fork's **Settings → Secrets and variables → Actions → Secrets** and set the following repository secrets. They are invisible to anyone including you once they are set, for security.
 
 | Key |Description | Example |
 | :---  | :---  | :--- |
-| ZOTERO_ID  | User ID of your Zotero account. **User ID is not your username, but a sequence of numbers**Get your ID from [here](https://www.zotero.org/settings/security). You can find it at the position shown in this [screenshot](https://github.com/TideDra/zotero-arxiv-daily/blob/main/assets/userid.png). | 12345678  |
+| ZOTERO_ID  | User ID of your Zotero account. **User ID is not your username, but a sequence of numbers.** Get your ID from [here](https://www.zotero.org/settings/security) (shown as "Your userID for use in API calls"). | 12345678  |
 | ZOTERO_KEY | An Zotero API key with read access. Get a key from [here](https://www.zotero.org/settings/security).  | AB5tZ877P2j7Sm2Mragq041H   |
 | SENDER | The email account of the SMTP server that sends you email. | abc@qq.com |
 | SENDER_PASSWORD | The password of the sender account. Note that it's not necessarily the password for logging in the e-mail client, but the authentication code for SMTP service. Ask your email provider for this.   | abcdefghijklmn |
@@ -68,9 +66,7 @@ Below are all the secrets you need to set. They are invisible to anyone includin
 | OPENAI_API_KEY | API Key when using the API to access LLMs. You can get FREE API for using advanced open source LLMs in [SiliconFlow](https://cloud.siliconflow.cn/i/b3XhBRAm). | sk-xxx |
 | OPENAI_API_BASE | API URL when using the API to access LLMs. | https://api.siliconflow.cn/v1 |
 
-Then you should also set a public variable `CUSTOM_CONFIG` for your custom configuration.
-![vars](./assets/repo_var.png)
-![custom_config](./assets/config_var.png)
+Then go to **Settings → Secrets and variables → Actions → Variables** and add a repository variable named `CUSTOM_CONFIG` for your custom configuration.
 Paste the following content into the value of `CUSTOM_CONFIG` variable:
 ```yaml
 zotero:
@@ -108,66 +104,74 @@ Set `source.arxiv.include_cross_list: true` if you want cross-listed papers incl
 Here is the full configuration, `???` means the value must be filled in:
 ```yaml
 zotero:
-  user_id: ??? # User ID of your Zotero account.
-  api_key: ??? # An Zotero API key with read access.
-  include_path: null # A list of glob patterns marking the Zotero collections that should be included. Example: ["2026/survey/**", "2026/reading-group/**"]
+  user_id: null # Required when search.mode > 1. Example: 12345678
+  api_key: null # Required when search.mode > 1. Example: AB5tZ877P2j7Sm2Mragq041H
+  include_path: null # Example: ["2026/survey/**", "2026/reading-group/**"]
+  ignore_path: null # Example: ["archive/**"]
+
+search:
+  mode: 5 # 1=keyword only, 2=more keyword/less Zotero, 3=equal, 4=less keyword/more Zotero, 5=Zotero only
+  keywords: null # Required when mode < 5. Natural language description of your interests.
+                 # Example: "hydrogel materials in ophthalmology combined with traditional Chinese medicine"
 
 source:
+  mix_mode: 5 # 1=PubMed only, 2=more PubMed/less arXiv, 3=equal, 4=less PubMed/more arXiv, 5=arXiv only
   arxiv:
-    category: null # The categories of target arxiv papers. Find the abbr of your research area from [here](https://arxiv.org/category_taxonomy). Example: ["cs.AI","cs.CV","cs.LG","cs.CL"]
-    include_cross_list: false # Whether to include arXiv cross-list papers in subscribed categories. Example: true
+    category: null # Example: ["cs.AI","cs.CV","cs.LG","cs.CL"]
+    include_cross_list: false
   biorxiv:
-    category: null # The categories of target biorxiv papers. Find categories from [here](https://www.biorxiv.org/). Example: ["biochemistry","animal behavior and cognition"]
+    category: null # Example: ["biochemistry","animal behavior and cognition"]
   medrxiv:
-    category: null # The categories of target medrxiv papers. Find categories from [here](https://www.medrxiv.org/) Example: ["psychiatry and clinical psychology", "neurology"]
+    category: null # Example: ["psychiatry and clinical psychology", "neurology"]
+  pubmed:
+    max_results: 200 # Max papers to fetch from PubMed. Example: 200
 
 email:
-  sender: ??? # The email account of the SMTP server that sends you email. Example: abc@qq.com
-  receiver: ??? # The email account that receives the paper list. Example: abc@outlook.com
-  smtp_server: ??? # The SMTP server that sends the email. Ask your email provider (Gmail, QQ, Outlook, ...) for its SMTP server. Example: smtp.qq.com
-  smtp_port: ??? # The port of SMTP server. Example: 465
-  sender_password: ??? # The password of the sender account. Note that it's not necessarily the password for logging in the e-mail client, but the authentication code for SMTP service. Ask your email provider for this. Example: abcdefghijklmn
+  sender: ??? # Example: abc@qq.com
+  receiver: ??? # Example: abc@outlook.com
+  smtp_server: ??? # Example: smtp.qq.com
+  smtp_port: ??? # Example: 465
+  sender_password: ??? # SMTP authentication code (not your login password)
 
 llm:
   api:
-    key: ??? # API Key of your LLM API. Example: sk-xxx
-    base_url: ??? # API URL of your LLM API. Example: https://api.openai.com/v1
+    key: ??? # Example: sk-xxx
+    base_url: ??? # Example: https://api.openai.com/v1
   generation_kwargs:
-  # Arguments for the LLM API. See [here](https://platform.openai.com/docs/api-reference/chat/create) for more details.
     max_tokens: 16384
     model: ???
-  language: English # Preferred language for the TL;DR. Example: English
+  language: English # Preferred language for TL;DR summaries. Example: Chinese
 
 reranker:
   local:
-    model: jinaai/jina-embeddings-v5-text-nano # The Hugging Face model name of the local embedding model. Example: jinaai/jina-embeddings-v5-text-nano
+    model: jinaai/jina-embeddings-v5-text-nano
     encode_kwargs:
-    # The kwargs for the encode method of the local embedding model. Details see [here](https://www.sbert.net/docs/package_reference/SentenceTransformer.html#sentence_transformers.SentenceTransformer.encode)
       task: retrieval
       prompt_name: document
   api:
-    key: null # API Key of your embedding model API. Example: sk-xxx
-    base_url: null # API URL of your embedding model API. Example: https://api.openai.com/v1
-    model: null # The model name of the embedding model. Example: text-embedding-3-large
-    batch_size: null # The batch size for embedding API requests. Adjust to match your provider's limit. Example: 64
+    key: null
+    base_url: null
+    model: null
+    batch_size: null
 
 executor:
-  debug: false # Whether to use debug mode. Example: true
-  send_empty: false # Whether to send an empty email even if no new papers today. Example: true
-  max_paper_num: 100 # The maximum number of the papers presented in the email. Example: 100
-  source: ??? # The sources of papers to retrieve. Example: ['arxiv','biorxiv','medrxiv']
-  reranker: local # The reranker to use. Example: 'local' or 'api'
+  debug: false
+  send_empty: false
+  max_paper_num: 100
+  source: ??? # Preprint sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
+  reranker: local # 'local' or 'api'
+  retrieval_days: 1 # Days back to retrieve papers. Example: 7 for last week
+  send_interval_days: 1 # For cron reference only. See docs/cron-guide.md. Example: 7
 ```
 
-That's all! Now you can test the workflow by manually triggering it:
-![test](./assets/test.png)
+That's all! Now you can test the workflow by manually triggering it from the **Actions** tab of your fork (select the "Test" workflow → "Run workflow").
 
 > [!NOTE]
 > The Test-Workflow Action is the debug version of the main workflow (Send-emails-daily), which always retrieve 5 arxiv papers regardless of the date. While the main workflow will be automatically triggered everyday and retrieve new papers released yesterday. There is no new arxiv paper at weekends and holiday, in which case you may see "No new papers found" in the log of main workflow.
 
 Then check the log and the receiver email after it finishes.
 
-By default, the main workflow runs on 22:00 UTC everyday. You can change this time by editting the workflow config `.github/workflows/main.yml`.
+By default, the main workflow runs on 22:00 UTC everyday. You can change this time by editing the workflow config `.github/workflows/main.yml`. See [docs/cron-guide.md](docs/cron-guide.md) for detailed instructions on configuring custom sending intervals.
 
 ### Local Running
 Supported by [uv](https://github.com/astral-sh/uv), this workflow can easily run on your local device if uv is installed:
@@ -175,39 +179,29 @@ Supported by [uv](https://github.com/astral-sh/uv), this workflow can easily run
 # set all the environment variables
 # export ZOTERO_ID=xxxx
 # ...
-cd zotero-arxiv-daily
-uv run main.py
+cd eat-pubmed-paper-daily
+uv run src/zotero_arxiv_daily/main.py
 ```
 
-## 🚀 Sync with the latest version
-This project is in active development. You can subscribe this repo via `Watch` so that you can be notified once we publish new release.
-
-![Watch](./assets/subscribe_release.png)
-
-
 ## 📖 How it works
-*Zotero-arXiv-Daily* firstly retrieves all the papers in your Zotero library and all the papers released in the previous day, via corresponding API. Then it calculates the embedding of each paper's abstract via an embedding model. The score of a paper is its weighted average similarity over all your Zotero papers (newer paper added to the library has higher weight). The TLDR of each paper is generated by LLM, given the text extracted by pymupdf4llm.
+This project firstly retrieves all the papers in your Zotero library (if configured) and all the new papers released from the configured sources (arXiv / bioRxiv / medRxiv / PubMed), via corresponding API. Then it calculates the embedding of each paper's abstract via an embedding model, and/or matches it against your natural-language keywords. The score of a paper blends keyword relevance and its weighted average similarity to your Zotero papers (newer paper added to the library has higher weight). The TLDR of each paper is generated by LLM, given the text extracted from the paper.
 
 ## 📌 Limitations
 - The recommendation algorithm is very simple, it may not accurately reflect your interest. Welcome better ideas for improving the algorithm!
 - High `MAX_PAPER_NUM` can lead the execution time exceed the limitation of Github Action runner (6h per execution for public repo, and 2000 mins per month for private repo). Commonly, the quota given to public repo is definitely enough for individual use. If you have special requirements, you can deploy the workflow in your own server, or use a self-hosted Github Action runner, or pay for the exceeded execution time.
 
 ## 👯‍♂️ Contribution
-Any issue and PR are welcomed! But remember that **each PR should merge to the `dev` branch**.
+Any issue and PR are welcomed!
 
 ## 📃 License
 Distributed under the AGPLv3 License. See `LICENSE` for detail.
 
 ## ❤️ Acknowledgement
+- [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily) — the original project this repo is forked and extended from
 - [pyzotero](https://github.com/urschrei/pyzotero)
 - [arxiv](https://github.com/lukasschwab/arxiv.py)
 - [sentence_transformers](https://github.com/UKPLab/sentence-transformers)
 
-## ☕ Buy Me A Coffee
-If you find this project helpful, welcome to sponsor me via WeChat or via [ko-fi](https://ko-fi.com/tidedra).
-![wechat_qr](assets/wechat_sponsor.JPG)
-
-
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=TideDra/zotero-arxiv-daily&type=Date)](https://star-history.com/#TideDra/zotero-arxiv-daily&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=HanluXU/eat-pubmed-paper-daily&type=Date)](https://star-history.com/#HanluXU/eat-pubmed-paper-daily&Date)

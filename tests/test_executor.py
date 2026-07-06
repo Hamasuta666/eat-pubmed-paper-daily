@@ -196,10 +196,7 @@ def test_run_end_to_end(config, monkeypatch):
     sent = []
     monkeypatch.setattr(smtplib, "SMTP", make_stub_smtp(sent))
 
-    # 5. Stub sleep (reranker/retriever)
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
-
-    # 6. Run
+    # 5. Run
     executor = Executor(config)
     executor.run()
 
@@ -237,7 +234,6 @@ def test_run_no_papers_send_empty_false(config, monkeypatch):
 
     sent = []
     monkeypatch.setattr(smtplib, "SMTP", make_stub_smtp(sent))
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
 
     executor = Executor(config)
     executor.run()
@@ -273,7 +269,6 @@ def test_run_no_papers_send_empty_true(config, monkeypatch):
 
     sent = []
     monkeypatch.setattr(smtplib, "SMTP", make_stub_smtp(sent))
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
 
     executor = Executor(config)
     executor.run()

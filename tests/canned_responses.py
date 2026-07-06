@@ -229,3 +229,33 @@ SAMPLE_BIORXIV_API_RESPONSE = {
         },
     ],
 }
+
+
+# ---------------------------------------------------------------------------
+# PubMed (NCBI E-utilities) canned responses
+# ---------------------------------------------------------------------------
+
+SAMPLE_PUBMED_ESEARCH_RESPONSE = {
+    "esearchresult": {"idlist": ["30000001", "30000002"]},
+}
+
+# MEDLINE flat-file text as returned by efetch (rettype=medline, retmode=text).
+# Field layout: 4-char tag, "- ", value (see PubMedRetriever._parse_medline).
+SAMPLE_PUBMED_MEDLINE_TEXT = (
+    "PMID- 30000001\n"
+    "TI  - A sample PubMed paper on AI diagnostics\n"
+    "AB  - This is a sample abstract about AI diagnostics in ophthalmology.\n"
+    "AU  - Smith J\n"
+    "AU  - Doe A\n"
+    "AD  - Department of Ophthalmology, Harvard Medical School, Boston, MA 02115, USA.\n"
+    "AD  - Department of Ophthalmology, Harvard Medical School, Boston, MA 02115, USA.\n"
+    "JT  - Nature Medicine\n"
+    "LID - 10.1038/s41591-026-00001-1 [doi]\n"
+    "\n"
+    "PMID- 30000002\n"
+    "TI  - Another PubMed paper without affiliation\n"
+    "AB  - Second sample abstract text.\n"
+    "AU  - Lee K\n"
+    "JT  - The Lancet\n"
+    "\n"
+)

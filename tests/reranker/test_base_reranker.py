@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from omegaconf import OmegaConf
 
 from zotero_arxiv_daily.reranker.base import BaseReranker, get_reranker_cls
 from tests.canned_responses import make_sample_paper, make_sample_corpus
@@ -11,7 +12,9 @@ class StubReranker(BaseReranker):
     """Reranker with a controlled similarity matrix for deterministic tests."""
 
     def __init__(self, sim_matrix: np.ndarray):
-        self.config = None
+        # search.mode=5 -> alpha=0.0 -> pure Zotero-corpus scoring, matching
+        # what these tests exercise (no keyword_query is passed to rerank()).
+        self.config = OmegaConf.create({"search": {"mode": 5}})
         self._sim = sim_matrix
 
     def get_similarity_score(self, s1, s2):

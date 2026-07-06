@@ -17,6 +17,7 @@ class Paper:
     url: str
     pdf_url: Optional[str] = None
     full_text: Optional[str] = None
+    journal: Optional[str] = None
     tldr: Optional[str] = None
     affiliations: Optional[list[str]] = None
     score: Optional[float] = None
@@ -95,13 +96,17 @@ class Paper:
             return affiliations
     
     def generate_affiliations(self, openai_client:OpenAI,llm_params:dict) -> Optional[list[str]]:
+        # If affiliations were already populated by the retriever (e.g. MEDLINE AD field),
+        # skip the LLM call to avoid overwriting valid data.
+        if self.affiliations is not None:
+            return self.affiliations
         try:
             affiliations = self._generate_affiliations_with_llm(openai_client,llm_params)
-            self.affiliations = affiliations
+            if affiliations is not None:
+                self.affiliations = affiliations
             return affiliations
         except Exception as e:
             logger.warning(f"Failed to generate affiliations of {self.url}: {e}")
-            self.affiliations = None
             return None
 @dataclass
 class CorpusPaper:

@@ -76,7 +76,6 @@ class NoneRetriever(BaseRetriever):
 
 
 def test_retrieve_papers_skips_conversion_errors(config, monkeypatch):
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
     with open_dict(config.source):
         config.source.failing_test = {}
     retriever = FailingTestRetriever(config)
@@ -85,7 +84,6 @@ def test_retrieve_papers_skips_conversion_errors(config, monkeypatch):
 
 
 def test_retrieve_papers_runs_serially(config, monkeypatch):
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
     with open_dict(config.source):
         config.source.serial_test = {}
     seen: list[str] = []
@@ -96,7 +94,6 @@ def test_retrieve_papers_runs_serially(config, monkeypatch):
 
 
 def test_retrieve_papers_skips_none_results(config, monkeypatch):
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
     with open_dict(config.source):
         config.source.none_test = {}
     retriever = NoneRetriever(config)
@@ -105,8 +102,6 @@ def test_retrieve_papers_skips_none_results(config, monkeypatch):
 
 
 def test_retrieve_papers_empty_raw(config, monkeypatch):
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
-
     @register_retriever("empty_test")
     class EmptyRetriever(BaseRetriever):
         def _retrieve_raw_papers(self):

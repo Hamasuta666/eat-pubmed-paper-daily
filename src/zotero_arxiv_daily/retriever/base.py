@@ -3,7 +3,6 @@ from omegaconf import DictConfig
 from ..protocol import Paper, RawPaperItem
 from tqdm import tqdm
 from typing import Type
-from time import sleep
 from loguru import logger
 
 
@@ -23,7 +22,7 @@ class BaseRetriever(ABC):
 
     def retrieve_papers(self) -> list[Paper]:
         raw_papers = self._retrieve_raw_papers()
-        logger.info("Processing papers...")
+        logger.info(f"Converting {len(raw_papers)} raw papers...")
         papers = []
         for raw_paper in tqdm(raw_papers, total=len(raw_papers), desc="Converting papers"):
             try:
@@ -33,7 +32,6 @@ class BaseRetriever(ABC):
                 continue
             if paper is not None:
                 papers.append(paper)
-            sleep(1)
         return papers
 
 registered_retrievers = {}

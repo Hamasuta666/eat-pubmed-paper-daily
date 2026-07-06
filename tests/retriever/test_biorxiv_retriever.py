@@ -8,14 +8,15 @@ from tests.canned_responses import SAMPLE_BIORXIV_API_RESPONSE
 
 
 def test_biorxiv_retrieve(config, mock_biorxiv_api, monkeypatch):
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
     with open_dict(config.source):
         config.source.biorxiv = {"category": ["bioinformatics"]}
     retriever = BiorxivRetriever(config)
     papers = retriever.retrieve_papers()
-    # Only latest date + matching category
-    assert len(papers) == 1
-    assert papers[0].title == "A biorxiv paper"
+    # The biorxiv API itself scopes results to the requested date range
+    # (via retrieval_days), so all matching-category papers in the response
+    # are kept — not just the single latest date.
+    assert len(papers) == 2
+    assert {p.title for p in papers} == {"A biorxiv paper", "Old biorxiv paper"}
 
 
 def test_biorxiv_empty_response(config, monkeypatch):
@@ -30,7 +31,6 @@ def test_biorxiv_empty_response(config, monkeypatch):
         return resp
 
     monkeypatch.setattr(requests, "get", _patched)
-    monkeypatch.setattr("zotero_arxiv_daily.retriever.base.sleep", lambda _: None)
 
     with open_dict(config.source):
         config.source.biorxiv = {"category": ["bioinformatics"]}

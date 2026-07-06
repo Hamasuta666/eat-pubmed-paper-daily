@@ -47,6 +47,19 @@ def test_render_email_no_affiliations():
     assert "Unknown Affiliation" in html
 
 
+def test_render_email_shows_stars_for_high_score():
+    paper = make_sample_paper(score=8.5, tldr="ok")
+    html = render_email([paper])
+    assert '<span class="full-star">' in html
+
+
+def test_render_email_no_stars_for_low_score():
+    paper = make_sample_paper(score=3.0, tldr="ok")
+    html = render_email([paper])
+    assert '<div class="star-wrapper">' not in html
+    assert '<span class="full-star">' not in html
+
+
 def test_get_stars_low_score():
     assert get_stars(5.0) == ""
     assert get_stars(6.0) == ""

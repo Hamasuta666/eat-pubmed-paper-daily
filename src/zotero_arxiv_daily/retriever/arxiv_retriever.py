@@ -12,6 +12,7 @@ from queue import Empty
 from typing import Any, Callable, TypeVar
 from loguru import logger
 import requests
+from datetime import datetime, timedelta, timezone
 
 T = TypeVar("T")
 
@@ -114,13 +115,20 @@ class ArxivRetriever(BaseRetriever):
 
     def _retrieve_raw_papers(self) -> list[ArxivResult]:
         client = arxiv.Client(num_retries=10, delay_seconds=10)
+        retrieval_days = int(self.config.executor.get("retrieval_days", 1))
+
+        if retrieval_days == 1:
+            return self._retrieve_via_rss(client)
+        else:
+            return self._retrieve_via_search(client, retrieval_days)
+
+    def _retrieve_via_rss(self, client: arxiv.Client) -> list[ArxivResult]:
+        """Original RSS-based retrieval for single-day (yesterday) mode."""
         query = '+'.join(self.config.source.arxiv.category)
         include_cross_list = self.config.source.arxiv.get("include_cross_list", False)
-        # Get the latest paper from arxiv rss feed
         feed = feedparser.parse(f"https://rss.arxiv.org/atom/{query}")
         if 'Feed error for query' in feed.feed.title:
             raise Exception(f"Invalid ARXIV_QUERY: {query}.")
-        raw_papers = []
         allowed_announce_types = {"new", "cross"} if include_cross_list else {"new"}
         all_paper_ids = [
             i.id.removeprefix("oai:arXiv.org:")
@@ -130,7 +138,7 @@ class ArxivRetriever(BaseRetriever):
         if self.config.executor.debug:
             all_paper_ids = all_paper_ids[:10]
 
-        # Get full information of each paper from arxiv api
+        raw_papers = []
         bar = tqdm(total=len(all_paper_ids))
         for i in range(0, len(all_paper_ids), 20):
             search = arxiv.Search(id_list=all_paper_ids[i:i + 20])
@@ -138,6 +146,43 @@ class ArxivRetriever(BaseRetriever):
             bar.update(len(batch))
             raw_papers.extend(batch)
         bar.close()
+        return raw_papers
+
+    def _retrieve_via_search(self, client: arxiv.Client, retrieval_days: int) -> list[ArxivResult]:
+        """Date-range search for multi-day retrieval."""
+        categories = self.config.source.arxiv.category
+        include_cross_list = self.config.source.arxiv.get("include_cross_list", False)
+
+        # Build category query: cat:cs.AI OR cat:cs.CV ...
+        # When include_cross_list is False, arXiv's search API can still return
+        # cross-listed papers matching these categories, so we filter by
+        # primary_category after fetching (see below).
+        cat_query = " OR ".join(f"cat:{c}" for c in categories)
+
+        # submittedDate format: YYYYMMDDHHMMSS
+        end_dt = datetime.now(timezone.utc)
+        start_dt = end_dt - timedelta(days=retrieval_days)
+        date_filter = (
+            f"submittedDate:[{start_dt.strftime('%Y%m%d%H%M%S')}"
+            f" TO {end_dt.strftime('%Y%m%d%H%M%S')}]"
+        )
+        full_query = f"({cat_query}) AND {date_filter}"
+        logger.info(f"arXiv date-range query: {full_query}")
+
+        max_results = 500 if not self.config.executor.debug else 10
+        search = arxiv.Search(
+            query=full_query,
+            max_results=max_results,
+            sort_by=arxiv.SortCriterion.SubmittedDate,
+        )
+        raw_papers = list(client.results(search))
+
+        if not include_cross_list:
+            category_set = set(c.lower() for c in categories)
+            raw_papers = [
+                p for p in raw_papers
+                if p.primary_category.lower() in category_set
+            ]
 
         return raw_papers
 
@@ -146,11 +191,15 @@ class ArxivRetriever(BaseRetriever):
         authors = [a.name for a in raw_paper.authors]
         abstract = raw_paper.summary
         pdf_url = raw_paper.pdf_url
-        full_text = extract_text_from_html(raw_paper)
-        if full_text is None:
-            full_text = extract_text_from_pdf(raw_paper)
-        if full_text is None:
-            full_text = extract_text_from_tar(raw_paper)
+
+        full_text = None
+        if not self.config.executor.get("skip_full_text", False):
+            full_text = extract_text_from_html(raw_paper)
+            if full_text is None:
+                full_text = extract_text_from_pdf(raw_paper)
+            if full_text is None:
+                full_text = extract_text_from_tar(raw_paper)
+
         return Paper(
             source=self.name,
             title=title,

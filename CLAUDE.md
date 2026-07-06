@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Zotero-arXiv-Daily recommends new arXiv/bioRxiv/medRxiv papers based on a user's Zotero library. It computes embedding similarity between new papers and the user's existing library, generates TLDRs via LLM, and delivers results by email. Designed to run as a GitHub Actions workflow at zero cost.
+This project (a customized fork of [TideDra/zotero-arxiv-daily](https://github.com/TideDra/zotero-arxiv-daily)) recommends new arXiv/bioRxiv/medRxiv/PubMed papers based on a user's Zotero library and/or a natural-language description of their research interests. It computes embedding similarity between new papers and the user's existing library (and/or keyword query), generates TLDRs via LLM, and delivers results by email. Designed to run entirely as a GitHub Actions workflow at zero cost — no server to maintain.
 
 ## Commands
 
@@ -33,7 +33,7 @@ The app follows a linear pipeline orchestrated by `Executor` (`src/zotero_arxiv_
 
 1. **Fetch Zotero corpus** — retrieves user's library papers via pyzotero API
 2. **Filter corpus** — applies `include_path` glob patterns to select relevant collections
-3. **Retrieve new papers** — fetches from configured sources (arXiv RSS, bioRxiv/medRxiv REST API)
+3. **Retrieve new papers** — fetches from configured sources (arXiv RSS/API, bioRxiv/medRxiv REST API, PubMed E-utilities)
 4. **Rerank** — scores candidates by weighted similarity to corpus (newer Zotero papers weighted higher)
 5. **Generate TLDRs + affiliations** — via OpenAI-compatible LLM API
 6. **Render + send email** — HTML email via SMTP
@@ -67,15 +67,6 @@ uv run pytest -m ""
 uv run pytest --cov=src/zotero_arxiv_daily --cov-report=term-missing
 ```
 
-## gstack
-
-Use the `/browse` skill from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
-
-Available skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/retro`, `/investigate`, `/document-release`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
-
-If gstack skills aren't working, run `cd .claude/skills/gstack && ./setup` to build the binary and register skills.
-
 ## Git Workflow
 
-- PRs should target the `dev` branch, not `main`
-- Current development branch: `dev`
+- Single-branch workflow: all development happens on `main`.
