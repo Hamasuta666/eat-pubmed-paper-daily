@@ -89,9 +89,9 @@ source:
     category: ["cs.AI","cs.CV","cs.LG","cs.CL"] # 换成你感兴趣的 arXiv 分类，参考 https://arxiv.org/category_taxonomy
     include_cross_list: false # 设为 true 可包含这些分类下的 arXiv 交叉列表论文
   biorxiv:
-    category: null # 示例: ["biochemistry","animal behavior and cognition"]
+    category: null # 若 executor.source 中包含 biorxiv 则必填，否则启动会报错。示例: ["biochemistry","animal behavior and cognition"]
   medrxiv:
-    category: null # 示例: ["psychiatry and clinical psychology", "neurology"]
+    category: null # 若 executor.source 中包含 medrxiv 则必填，否则启动会报错。示例: ["psychiatry and clinical psychology", "neurology"]
   pubmed:
     max_results: 200 # 从 PubMed 抓取的最大论文数
 
@@ -128,7 +128,7 @@ executor:
   send_empty: false # 没有新论文时是否仍发送一封空邮件
   skip_full_text: false # 跳过下载论文全文 PDF/HTML，节省内存和时间
   max_paper_num: 100 # 邮件中展示的论文数量上限
-  source: ['arxiv'] # 论文来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']
+  source: ['arxiv'] # 论文来源。示例: ['arxiv'] 或 ['arxiv','biorxiv','medrxiv']。选了 biorxiv/medrxiv 就必须同时在上面 source.biorxiv/medrxiv.category 填对应分类，否则启动会报错
   reranker: local # 'local' 或 'api'
   retrieval_days: 1 # 回溯检索的天数。示例: 7 表示检索最近一周
   send_interval_days: 1 # 仅供 cron 配置参考，详见 docs/cron-guide.md

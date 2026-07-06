@@ -89,9 +89,9 @@ source:
     category: ["cs.AI","cs.CV","cs.LG","cs.CL"] # Replace with the arXiv categories you're interested in, see https://arxiv.org/category_taxonomy
     include_cross_list: false # Set to true to include arXiv cross-list papers in these categories
   biorxiv:
-    category: null # Example: ["biochemistry","animal behavior and cognition"]
+    category: null # Required if biorxiv is included in executor.source, otherwise startup fails. Example: ["biochemistry","animal behavior and cognition"]
   medrxiv:
-    category: null # Example: ["psychiatry and clinical psychology", "neurology"]
+    category: null # Required if medrxiv is included in executor.source, otherwise startup fails. Example: ["psychiatry and clinical psychology", "neurology"]
   pubmed:
     max_results: 200 # Max papers to fetch from PubMed
 
@@ -128,7 +128,7 @@ executor:
   send_empty: false # Whether to still send an empty email when no new papers are found
   skip_full_text: false # Skip downloading full text PDFs/HTML for papers. Saves memory and time
   max_paper_num: 100 # Maximum number of papers shown in the email
-  source: ['arxiv'] # Paper sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']
+  source: ['arxiv'] # Paper sources. Example: ['arxiv'] or ['arxiv','biorxiv','medrxiv']. If you include biorxiv/medrxiv you must also fill in the matching source.biorxiv/medrxiv.category above, otherwise startup fails
   reranker: local # 'local' or 'api'
   retrieval_days: 1 # Days back to retrieve papers. Example: 7 for last week
   send_interval_days: 1 # For cron reference only. See docs/cron-guide.md
