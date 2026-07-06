@@ -105,7 +105,9 @@ executor:
 >[!NOTE]
 > `${oc.env:XXX,yyy}` 表示读取环境变量 `XXX` 的值；如果该环境变量未设置，则使用默认值 `yyy`。
 
-以下是完整配置项，`???` 表示该值必须填写：
+以下是完整配置参考（对应 `config/base.yaml` 的默认值），`???` 表示该字段没有默认值、最终必须有值，仅供你了解全部可配置项。
+> [!IMPORTANT]
+> 这不是第二份要填写的模板！敏感字段（`zotero.api_key`、`email.sender_password`、`llm.api.key` 等）已经在上面粘贴到 `CUSTOM_CONFIG` 的模板中通过 `${oc.env:...}` 从 Secrets 读取。请不要在这里把真实的 key、密码等敏感信息以明文形式再次填入 `CUSTOM_CONFIG`。这里的代码块只是用来告诉你还有哪些非敏感项（如 `source.mix_mode`、`executor.retrieval_days`、`executor.favorite_journals` 等）可以按需添加到 `CUSTOM_CONFIG` 中。
 ```yaml
 zotero:
   user_id: null # 当 search.mode > 1 时必填。示例: 12345678

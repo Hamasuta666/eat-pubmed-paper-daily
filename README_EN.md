@@ -105,7 +105,9 @@ Set `source.arxiv.include_cross_list: true` if you want cross-listed papers incl
 >[!NOTE]
 > `${oc.env:XXX,yyy}` means the value of the environment variable `XXX`. If the variable is not set, the default value `yyy` will be used.
 
-Here is the full configuration, `???` means the value must be filled in:
+Here is the full configuration reference (mirroring the defaults in `config/base.yaml`); `???` marks fields with no default that must ultimately have a value. This is provided purely so you know what's configurable.
+> [!IMPORTANT]
+> This is NOT a second template to fill in! Sensitive fields (`zotero.api_key`, `email.sender_password`, `llm.api.key`, etc.) are already resolved via `${oc.env:...}` from Secrets in the `CUSTOM_CONFIG` template pasted above. Do not paste real keys/passwords into `CUSTOM_CONFIG` again here in plain text. This block only shows which non-sensitive fields (e.g. `source.mix_mode`, `executor.retrieval_days`, `executor.favorite_journals`) you may optionally add to `CUSTOM_CONFIG`.
 ```yaml
 zotero:
   user_id: null # Required when search.mode > 1. Example: 12345678
